@@ -6,6 +6,9 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
+      - /app/node_modules  # Volumen anónimo: Protege las librerías de Linux
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Opcional: Ayuda a que el Hot Reload funcione mejor en Docker
     depends_on:
       - backend
 
@@ -19,14 +22,14 @@ services:
           path: ./backend
           target: /app
           ignore:
-            - .venv
+            - .venv/
         - action: rebuild
           path: ./backend/pyproject.toml
     volumes:
       - ./backend:/app
-      - /app/.venv
+      - /app/.venv    
     networks:
-      - net
+      - net          
     depends_on:
       - db
 
