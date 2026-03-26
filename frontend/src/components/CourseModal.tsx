@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import ColorPicker from './ColorPicker';
 import type { Course } from '../context/types';
-
-let courseIdCounter = 100;
+import { DEFAULT_COURSE_COLOR } from '../context/constants';
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const HOURS = Array.from({ length: 14 }, (_, i) => 8 + i);
@@ -19,8 +18,9 @@ export default function CourseModal({ isOpen, onClose, selectedDay, selectedHour
   const { user, allCourses, addCourse, addScheduleBlock } = useUser();
   const [mode, setMode] = useState<'select' | 'create'>('select');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [newCourse, setNewCourse] = useState({ name: '', code: '', color: '#4ECDC4' });
+  const [newCourse, setNewCourse] = useState({ name: '', code: '', color: DEFAULT_COURSE_COLOR });
   const [error, setError] = useState('');
+  const [nextId, setNextId] = useState(101);
 
   if (!isOpen) return null;
 
@@ -50,7 +50,7 @@ export default function CourseModal({ isOpen, onClose, selectedDay, selectedHour
       }
       const course: Course = {
         ...newCourse,
-        id: ++courseIdCounter
+        id: nextId
       };
       addCourse(course);
       addScheduleBlock({
@@ -61,12 +61,13 @@ export default function CourseModal({ isOpen, onClose, selectedDay, selectedHour
         courseCode: course.code,
         color: course.color
       });
+      setNextId(prev => prev + 1);
     }
 
     onClose();
     setMode('select');
     setSelectedCourse(null);
-    setNewCourse({ name: '', code: '', color: '#4ECDC4' });
+    setNewCourse({ name: '', code: '', color: DEFAULT_COURSE_COLOR });
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {

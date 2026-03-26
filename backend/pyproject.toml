@@ -11,4 +11,6 @@ dependencies = [
     "numpy>=2.0.2",
     "sqlalchemy>=2.0.48",
     "uvicorn>=0.39.0",
+    "passlib[bcrypt]>=1.7.4",
+    "python-multipart>=0.0.20",
 ]

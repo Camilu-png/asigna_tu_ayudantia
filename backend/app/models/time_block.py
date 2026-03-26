@@ -1,4 +1,6 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from __future__ import annotations
+
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, ForeignKey
 from app.db.base import Base
 
@@ -11,3 +13,11 @@ class TimeBlock(Base):
     start_time: Mapped[str] = mapped_column(String(10), nullable=False)
     end_time: Mapped[str] = mapped_column(String(10), nullable=False)
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), nullable=True)
+
+    course: Mapped["Course"] = relationship(back_populates="time_blocks")
+    student_courses: Mapped[list["StudentCourse"]] = relationship(
+        back_populates="time_block"
+    )
+    assistant_courses: Mapped[list["StudentCourse"]] = relationship(
+        back_populates="time_block"
+    )

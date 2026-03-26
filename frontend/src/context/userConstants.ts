@@ -1,9 +1,11 @@
+import type { UserRole } from './types';
+
 export const USER_ROLES = {
   STUDENT: 'student',
   ASSISTANT: 'assistant'
 } as const;
 
-export type UserRole = typeof USER_ROLES.STUDENT | typeof USER_ROLES.ASSISTANT;
+export type { UserRole };
 
 export const MOCK_USERS: Record<UserRole, {
   id: number;

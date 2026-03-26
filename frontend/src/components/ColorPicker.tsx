@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { DEFAULT_COURSE_COLOR } from '../context/constants';
+
 interface ColorPickerProps {
   value: string;
   onChange: (color: string) => void;
@@ -12,7 +15,7 @@ const PRESET_COLORS = [
 ];
 
 export default function ColorPicker({ value, onChange }: ColorPickerProps) {
-  const [customColor, setCustomColor] = useState(value || '#4ECDC4');
+  const [customColor, setCustomColor] = useState(value || DEFAULT_COURSE_COLOR);
   const [showCustom, setShowCustom] = useState(false);
 
   const handlePresetClick = (color: string) => {

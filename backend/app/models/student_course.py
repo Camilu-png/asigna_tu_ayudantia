@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, ForeignKey, Table, Column
 from app.db.base import Base
+from app.models.constants import DEFAULT_COURSE_COLOR
 
 
 class StudentCourse(Base):
@@ -11,7 +14,11 @@ class StudentCourse(Base):
     time_block_id: Mapped[int] = mapped_column(
         ForeignKey("time_blocks.id"), primary_key=True
     )
-    color: Mapped[str] = mapped_column(String(7), default="#4ECDC4")
+    color: Mapped[str] = mapped_column(String(7), default=DEFAULT_COURSE_COLOR)
+
+    student: Mapped["Student"] = relationship(back_populates="student_courses")
+    course: Mapped["Course"] = relationship(back_populates="student_courses")
+    time_block: Mapped["TimeBlock"] = relationship(back_populates="student_courses")
 
 
 class AssistantCourse(Base):
@@ -24,4 +31,8 @@ class AssistantCourse(Base):
     time_block_id: Mapped[int] = mapped_column(
         ForeignKey("time_blocks.id"), primary_key=True
     )
-    color: Mapped[str] = mapped_column(String(7), default="#4ECDC4")
+    color: Mapped[str] = mapped_column(String(7), default=DEFAULT_COURSE_COLOR)
+
+    assistant: Mapped["Assistant"] = relationship(back_populates="assistant_courses")
+    course: Mapped["Course"] = relationship(back_populates="assistant_courses")
+    time_block: Mapped["TimeBlock"] = relationship(back_populates="assistant_courses")

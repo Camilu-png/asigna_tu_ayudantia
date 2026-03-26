@@ -6,8 +6,6 @@ interface Message {
   text: string;
 }
 
-let messageId = 1;
-
 const INITIAL_MESSAGES: Message[] = [
   { id: 1, role: 'assistant', text: '¡Hola! Soy tu asistente de horario. ¿En qué puedo ayudarte hoy?' }
 ];
@@ -16,6 +14,7 @@ export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState('');
+  const [nextId, setNextId] = useState(2);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,21 +27,23 @@ export default function ChatBot() {
     if (!input.trim()) return;
 
     const userMessage: Message = {
-      id: ++messageId,
+      id: nextId,
       role: 'user',
       text: input.trim()
     };
 
     setMessages([...messages, userMessage]);
+    setNextId(prev => prev + 1);
     setInput('');
 
     setTimeout(() => {
-      const response = generateResponse(userMessage.text);
+      const response = generateResponse(userMessage.text, nextId + 1);
       setMessages(prev => [...prev, response]);
+      setNextId(prev => prev + 1);
     }, 500);
   };
 
-  const generateResponse = (text: string): Message => {
+  const generateResponse = (text: string, newId: number): Message => {
     const lowerText = text.toLowerCase();
     let responseText = 'Entiendo tu consulta. Puedo ayudarte con información sobre tu horario, asignaturas o preferencias. ¿Podrías ser más específico?';
 
@@ -59,7 +60,7 @@ export default function ChatBot() {
     }
 
     return {
-      id: ++messageId,
+      id: newId,
       role: 'assistant',
       text: responseText
     };

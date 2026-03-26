@@ -1,9 +1,8 @@
 from .assistant import Assistant
-from .assistant_course import AssistantCourse
 from .course import Course
 from .solver_run import SolverRun
 from .student import Student
-from .student_course import StudentCourse
+from .student_course import StudentCourse, AssistantCourse
 from .time_block import TimeBlock
 
 __all__ = [

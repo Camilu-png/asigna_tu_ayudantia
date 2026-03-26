@@ -1,0 +1,1 @@
+export const DEFAULT_COURSE_COLOR = '#4ECDC4';

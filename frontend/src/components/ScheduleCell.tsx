@@ -1,5 +1,4 @@
 import { useUser } from '../context/UserContext';
-import type { ScheduleBlock } from '../context/types';
 
 interface ScheduleCellProps {
   day: number;
