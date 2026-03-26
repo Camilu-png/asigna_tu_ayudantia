@@ -16,7 +16,7 @@ async def get_courses(db: AsyncSession = Depends(get_db)):
             "id": course.id,
             "name": course.name,
             "code": course.code,
-            "proffessor": course.proffessor,
+            "professor": course.professor,
             "credits": course.credits
         }
         for course in courses
