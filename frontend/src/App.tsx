@@ -1,12 +1,12 @@
 import './App.css'
+import { UserProvider } from './context/UserContext'
 import Home from './views/Home'
 
 function App() {
   return(
-    <div>
-      <h1>Asigna tu ayudantía</h1>
+    <UserProvider>
       <Home />
-    </div>
+    </UserProvider>
   );
 }
 
