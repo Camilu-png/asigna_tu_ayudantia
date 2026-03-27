@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { USER_ROLES, MOCK_USERS, INITIAL_COURSES, type UserRole } from './userConstants';
-import type { User, Course, ScheduleBlock, UserContextType } from './types';
+import { createContext, useContext, useState, useEffect } from "react";
+import { USER_ROLES, INITIAL_COURSES, type UserRole } from "./userConstants";
+import { authApi } from "../api/auth";
+import type { User, Course, ScheduleBlock, UserContextType } from "./types";
 
 export { USER_ROLES };
 export type { UserRole };
@@ -16,69 +17,137 @@ function loadFromStorage<T>(key: string, fallback: T): T {
   }
 }
 
+interface StoredUser {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    const savedRole = loadFromStorage<string | null>('userRole', null);
-    return savedRole ? MOCK_USERS[savedRole as UserRole] : MOCK_USERS[USER_ROLES.STUDENT];
+    const storedUser = loadFromStorage<StoredUser | null>("user", null);
+    if (storedUser) {
+      return {
+        ...storedUser,
+        courses: [],
+      };
+    }
+    return null;
   });
 
+  const [token, setToken] = useState<string | null>(() => {
+    return loadFromStorage<string | null>("token", null);
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+
   const [schedule, setSchedule] = useState<ScheduleBlock[]>(() => {
-    return loadFromStorage<ScheduleBlock[]>('userSchedule', []);
+    return loadFromStorage<ScheduleBlock[]>("userSchedule", []);
   });
 
   const [allCourses, setAllCourses] = useState<Course[]>(() => {
-    const saved = loadFromStorage<Course[] | null>('allCourses', null);
+    const saved = loadFromStorage<Course[] | null>("allCourses", null);
     return saved || INITIAL_COURSES;
   });
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem('userRole', user.role);
+      const storedUser: StoredUser = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role as UserRole,
+      };
+      localStorage.setItem("user", JSON.stringify(storedUser));
+    } else {
+      localStorage.removeItem("user");
     }
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('userSchedule', JSON.stringify(schedule));
+    if (token) {
+      localStorage.setItem("token", token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    localStorage.setItem("userSchedule", JSON.stringify(schedule));
   }, [schedule]);
 
-  const switchRole = (newRole: UserRole) => {
-    setUser(MOCK_USERS[newRole]);
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const response = await authApi.login(email, password);
+    setToken(response.access_token);
+
+    const role =
+      response.user.role === "assistant"
+        ? USER_ROLES.ASSISTANT
+        : USER_ROLES.STUDENT;
+
+    const newUser: User = {
+      id: response.user.id,
+      name: response.user.name,
+      email: response.user.email,
+      role: role,
+      courses: [],
+    };
+    setUser(newUser);
+    return newUser;
+  };
+
+  const logout = async () => {
+    if (token) {
+      try {
+        await authApi.logout(token);
+      } catch {
+        // Ignore logout errors
+      }
+    }
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("userSchedule");
+    setUser(null);
+    setToken(null);
+    setSchedule([]);
   };
 
   const addCourse = (course: Course) => {
     const newCourse = { ...course, id: Date.now() };
     const updatedCourses = [...allCourses, newCourse];
     setAllCourses(updatedCourses);
-    localStorage.setItem('allCourses', JSON.stringify(updatedCourses));
+    localStorage.setItem("allCourses", JSON.stringify(updatedCourses));
   };
 
-  const addScheduleBlock = (block: Omit<ScheduleBlock, 'id'>) => {
+  const addScheduleBlock = (block: Omit<ScheduleBlock, "id">) => {
     const newBlock = { ...block, id: Date.now() };
     setSchedule([...schedule, newBlock]);
   };
 
   const removeScheduleBlock = (blockId: number) => {
-    setSchedule(schedule.filter(b => b.id !== blockId));
-  };
-
-  const logout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userSchedule');
-    setUser(MOCK_USERS[USER_ROLES.STUDENT]);
+    setSchedule(schedule.filter((b) => b.id !== blockId));
   };
 
   return (
-    <UserContext.Provider value={{
-      user,
-      schedule,
-      allCourses,
-      switchRole,
-      addCourse,
-      addScheduleBlock,
-      removeScheduleBlock,
-      logout,
-      setUser
-    }}>
+    <UserContext.Provider
+      value={{
+        user,
+        schedule,
+        allCourses,
+        addCourse,
+        addScheduleBlock,
+        removeScheduleBlock,
+        logout,
+        setUser,
+        login,
+        isLoading,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
@@ -87,7 +156,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 export function useUser() {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 }

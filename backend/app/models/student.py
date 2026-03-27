@@ -3,6 +3,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer
 from app.db.base import Base
+from app.models.student_course import StudentCourse
 
 
 class Student(Base):

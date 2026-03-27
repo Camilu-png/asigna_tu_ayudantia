@@ -1,8 +1,7 @@
 import { useUser, USER_ROLES } from '../context/UserContext';
-import type { UserRole } from '../context/userConstants';
 
 export default function Sidebar() {
-  const { user, logout, switchRole } = useUser();
+  const { user, logout } = useUser();
 
   if (!user) return null;
 
@@ -35,18 +34,6 @@ export default function Sidebar() {
           </div>
         )}
       </nav>
-
-      <div className="sidebar-dev">
-        <span className="dev-label">Modo desarrollo:</span>
-        <select 
-          value={user.role} 
-          onChange={(e) => switchRole(e.target.value as UserRole)}
-          className="dev-select"
-        >
-          <option value={USER_ROLES.STUDENT}>Estudiante</option>
-          <option value={USER_ROLES.ASSISTANT}>Ayudante</option>
-        </select>
-      </div>
 
       <div className="sidebar-footer">
         <div className="sidebar-user">

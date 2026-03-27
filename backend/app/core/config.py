@@ -19,3 +19,7 @@ def _build_database_url() -> str:
 DATABASE_URL = _build_database_url()
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
+SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey123456789")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60

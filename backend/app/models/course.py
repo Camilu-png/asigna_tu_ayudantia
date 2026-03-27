@@ -3,6 +3,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer
 from app.db.base import Base
+from app.models.student_course import StudentCourse, AssistantCourse
 
 
 class Course(Base):
@@ -18,6 +19,6 @@ class Course(Base):
     student_courses: Mapped[list["StudentCourse"]] = relationship(
         back_populates="course"
     )
-    assistant_courses: Mapped[list["StudentCourse"]] = relationship(
+    assistant_courses: Mapped[list["AssistantCourse"]] = relationship(
         back_populates="course"
     )

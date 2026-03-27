@@ -29,10 +29,11 @@ export interface UserContextType {
   user: User | null;
   schedule: ScheduleBlock[];
   allCourses: Course[];
-  switchRole: (role: UserRole) => void;
   addCourse: (course: Course) => void;
   addScheduleBlock: (block: Omit<ScheduleBlock, 'id'>) => void;
   removeScheduleBlock: (blockId: number) => void;
   logout: () => void;
   setUser: (user: User | null) => void;
+  login: (email: string, password: string) => Promise<User>;
+  isLoading: boolean;
 }
