@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { USER_ROLES, INITIAL_COURSES, type UserRole } from "./userConstants";
 import { authApi } from "../api/auth";
 import type { User, Course, ScheduleBlock, UserContextType } from "./types";
@@ -40,6 +40,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return loadFromStorage<string | null>("token", null);
   });
 
+  const [refreshToken, setRefreshToken] = useState<string | null>(() => {
+    return loadFromStorage<string | null>("refreshToken", null);
+  });
+
   const [isLoading, setIsLoading] = useState(true);
 
   const [schedule, setSchedule] = useState<ScheduleBlock[]>(() => {
@@ -50,6 +54,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const saved = loadFromStorage<Course[] | null>("allCourses", null);
     return saved || INITIAL_COURSES;
   });
+
+  const refreshAccessToken = useCallback(async () => {
+    if (!refreshToken) return false;
+    try {
+      const response = await authApi.refresh(refreshToken);
+      setToken(response.access_token);
+      setRefreshToken(response.refresh_token);
+      localStorage.setItem("token", response.access_token);
+      localStorage.setItem("refreshToken", response.refresh_token);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [refreshToken]);
 
   useEffect(() => {
     if (user) {
@@ -74,6 +92,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   useEffect(() => {
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    } else {
+      localStorage.removeItem("refreshToken");
+    }
+  }, [refreshToken]);
+
+  useEffect(() => {
     localStorage.setItem("userSchedule", JSON.stringify(schedule));
   }, [schedule]);
 
@@ -84,6 +110,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     const response = await authApi.login(email, password);
     setToken(response.access_token);
+    setRefreshToken(response.refresh_token);
 
     const role =
       response.user.role === "assistant"
@@ -111,9 +138,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("userSchedule");
     setUser(null);
     setToken(null);
+    setRefreshToken(null);
     setSchedule([]);
   };
 
@@ -146,6 +175,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setUser,
         login,
         isLoading,
+        token,
+        refreshAccessToken,
       }}
     >
       {children}

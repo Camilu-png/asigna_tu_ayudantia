@@ -36,4 +36,6 @@ export interface UserContextType {
   setUser: (user: User | null) => void;
   login: (email: string, password: string) => Promise<User>;
   isLoading: boolean;
+  token: string | null;
+  refreshAccessToken: () => Promise<boolean>;
 }
