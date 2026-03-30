@@ -1,4 +1,5 @@
 # Asigna tu ayudantía
 
 Este proyecto es una implementación de mi trabajo de tesis, que se centra en la asignación de ayudantías para cursos universitarios. El objetivo es optimizar la distribución de ayudantías entre los estudiantes, teniendo en cuenta sus preferencias. El proyecto utiliza algoritmos de optimización para encontrar la mejor asignación posible, maximizando la satisfacción de los estudiantes y asegurando una distribución equitativa de las ayudantías. Para más detalles sobre la implementación y los resultados, puedes consultar el [documento de tesis](https://repositorio.usm.cl/handle/123456789/78182) completo o el [repositorio](https://github.com/Camilu-png/student-assistant-scheduling) de código asociado.
+
 [![wakatime](https://wakatime.com/badge/user/d82f4a7a-0442-403c-a77c-f46272493e07/project/dea24990-0f13-4ce6-8052-4fcf00c6d2f9.svg)](https://wakatime.com/badge/user/d82f4a7a-0442-403c-a77c-f46272493e07/project/dea24990-0f13-4ce6-8052-4fcf00c6d2f9)
