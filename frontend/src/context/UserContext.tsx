@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { USER_ROLES, INITIAL_COURSES, type UserRole } from "./userConstants";
 import { authApi } from "../api/auth";
+import { getScheduleBlocks, createScheduleBlock as apiCreateScheduleBlock, deleteScheduleBlock as apiDeleteScheduleBlock } from "../api/schedule";
 import type { User, Course, ScheduleBlock, UserContextType } from "./types";
 
 export { USER_ROLES };
@@ -76,6 +77,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
   }, [refreshToken]);
+
+  const loadSchedule = useCallback(async () => {
+    if (!user) return;
+    try {
+      const userRole = user.role === USER_ROLES.ASSISTANT ? "assistant" : "student";
+      const blocks = await getScheduleBlocks(user.id, userRole);
+      setSchedule(blocks);
+    } catch (error) {
+      console.error("Error loading schedule:", error);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadSchedule();
+    }
+  }, [user, loadSchedule]);
 
   useEffect(() => {
     if (user) {
@@ -165,13 +183,55 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("allCourses", JSON.stringify(updatedCourses));
   };
 
-  const addScheduleBlock = (block: Omit<ScheduleBlock, "id">) => {
-    const newBlock = { ...block, id: Date.now() };
-    setSchedule([...schedule, newBlock]);
+  const addScheduleBlock = async (block: Omit<{
+    user_id: number;
+    user_role: string;
+    day: string;
+    start_time: string;
+    end_time: string;
+    course_id?: number;
+    new_course?: {
+      name: string;
+      code: string;
+      professor: string;
+      credits: number;
+    };
+    color?: string;
+  }, "id">) => {
+    if (!user) return;
+    
+    const userRole = user.role === USER_ROLES.ASSISTANT ? "assistant" : "student";
+    
+    try {
+      const newBlock = await apiCreateScheduleBlock({
+        user_id: user.id,
+        user_role: userRole,
+        day: block.day,
+        start_time: block.start_time,
+        end_time: block.end_time,
+        course_id: block.course_id,
+        new_course: block.new_course,
+        color: block.color,
+      });
+      setSchedule([...schedule, newBlock]);
+    } catch (error) {
+      console.error("Error creating schedule block:", error);
+      throw error;
+    }
   };
 
-  const removeScheduleBlock = (blockId: number) => {
-    setSchedule(schedule.filter((b) => b.id !== blockId));
+  const removeScheduleBlock = async (blockId: number) => {
+    if (!user) return;
+    
+    const userRole = user.role === USER_ROLES.ASSISTANT ? "assistant" : "student";
+    
+    try {
+      await apiDeleteScheduleBlock(blockId, user.id, userRole);
+      setSchedule(schedule.filter((b) => b.id !== blockId));
+    } catch (error) {
+      console.error("Error deleting schedule block:", error);
+      throw error;
+    }
   };
 
   return (
@@ -191,6 +251,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         token,
         refreshAccessToken,
         toggleSidebar,
+        loadSchedule,
       }}
     >
       {children}

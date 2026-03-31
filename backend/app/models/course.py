@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer
 from app.db.base import Base
-from app.models.student_course import StudentCourse, AssistantCourse
+from app.models.schedule import ScheduleBlock
 
 
 class Course(Base):
@@ -15,10 +15,6 @@ class Course(Base):
     professor: Mapped[str] = mapped_column(String(255), nullable=False)
     credits: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    time_blocks: Mapped[list["TimeBlock"]] = relationship(back_populates="course")
-    student_courses: Mapped[list["StudentCourse"]] = relationship(
-        back_populates="course"
-    )
-    assistant_courses: Mapped[list["AssistantCourse"]] = relationship(
+    schedule_blocks: Mapped[list["ScheduleBlock"]] = relationship(
         back_populates="course"
     )

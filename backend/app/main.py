@@ -12,9 +12,7 @@ from app.db.base import Base
 from app.models.course import Course
 from app.models.student import Student
 from app.models.assistant import Assistant
-from app.models.time_block import TimeBlock
-from app.models.student_course import StudentCourse, AssistantCourse
-from app.models.solver_run import SolverRun
+from app.models.schedule import ScheduleBlock, StudentSchedule, AssistantSchedule
 
 limiter = Limiter(key_func=get_remote_address)
 

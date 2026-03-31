@@ -17,12 +17,29 @@ export interface User {
 
 export interface ScheduleBlock {
   id: number;
-  day: number;
-  hour: number;
-  courseId: number;
-  courseName: string;
-  courseCode: string;
-  color: string;
+  day: string;
+  start_time: string;
+  end_time: string;
+  course_id: number | null;
+  course_name: string | null;
+  course_code: string | null;
+  color: string | null;
+}
+
+export interface CreateScheduleBlockRequest {
+  user_id: number;
+  user_role: string;
+  day: string;
+  start_time: string;
+  end_time: string;
+  course_id?: number;
+  new_course?: {
+    name: string;
+    code: string;
+    professor: string;
+    credits: number;
+  };
+  color?: string;
 }
 
 export interface UserContextType {
@@ -31,8 +48,8 @@ export interface UserContextType {
   allCourses: Course[];
   sidebarCollapsed: boolean;
   addCourse: (course: Course) => void;
-  addScheduleBlock: (block: Omit<ScheduleBlock, 'id'>) => void;
-  removeScheduleBlock: (blockId: number) => void;
+  addScheduleBlock: (block: CreateScheduleBlockRequest) => Promise<void>;
+  removeScheduleBlock: (blockId: number) => Promise<void>;
   logout: () => void;
   setUser: (user: User | null) => void;
   login: (email: string, password: string) => Promise<User>;
@@ -40,4 +57,5 @@ export interface UserContextType {
   token: string | null;
   refreshAccessToken: () => Promise<boolean>;
   toggleSidebar: () => void;
+  loadSchedule: () => Promise<void>;
 }

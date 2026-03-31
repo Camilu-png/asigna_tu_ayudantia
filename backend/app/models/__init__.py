@@ -1,16 +1,13 @@
 from .assistant import Assistant
 from .course import Course
-from .solver_run import SolverRun
+from .schedule import ScheduleBlock, StudentSchedule, AssistantSchedule
 from .student import Student
-from .student_course import StudentCourse, AssistantCourse
-from .time_block import TimeBlock
 
 __all__ = [
     "Assistant",
-    "AssistantCourse",
+    "AssistantSchedule",
     "Course",
-    "SolverRun",
+    "ScheduleBlock",
     "Student",
-    "StudentCourse",
-    "TimeBlock",
+    "StudentSchedule",
 ]

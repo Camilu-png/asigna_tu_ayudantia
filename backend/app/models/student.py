@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer
 from app.db.base import Base
-from app.models.student_course import StudentCourse
+from app.models.schedule import StudentSchedule
 
 
 class Student(Base):
@@ -14,6 +14,6 @@ class Student(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    student_courses: Mapped[list["StudentCourse"]] = relationship(
+    student_schedules: Mapped[list["StudentSchedule"]] = relationship(
         back_populates="student"
     )
