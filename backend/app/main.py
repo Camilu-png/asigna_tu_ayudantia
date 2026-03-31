@@ -12,6 +12,7 @@ from app.db.base import Base
 from app.models.course import Course
 from app.models.student import Student
 from app.models.assistant import Assistant
+from app.models.assistant_course import AssistantCourse
 from app.models.schedule import ScheduleBlock, StudentSchedule, AssistantSchedule
 
 limiter = Limiter(key_func=get_remote_address)

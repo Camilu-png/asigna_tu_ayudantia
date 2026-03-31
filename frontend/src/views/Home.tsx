@@ -5,7 +5,7 @@ import ChatBot from "../components/ChatBot";
 import "../styles/home.css";
 
 function Home() {
-  const { user, sidebarCollapsed } = useUser();
+  const { user, sidebarCollapsed, selectedCourse } = useUser();
 
   if (!user) {
     return null;
@@ -20,8 +20,17 @@ function Home() {
       <main className="home-main">
         <header className="home-header">
           <div className="welcome-section">
-            <h2>Bienvenido, {user.name}</h2>
-            <span className="user-role-badge">{roleLabel}</span>
+            {selectedCourse ? (
+              <>
+                <h2>{selectedCourse.name}</h2>
+                <span className="course-code-badge">{selectedCourse.code}</span>
+              </>
+            ) : (
+              <>
+                <h2>Bienvenido, {user.name}</h2>
+                <span className="user-role-badge">{roleLabel}</span>
+              </>
+            )}
           </div>
         </header>
         <section className="home-content">

@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { USER_ROLES, INITIAL_COURSES, type UserRole } from "./userConstants";
 import { authApi } from "../api/auth";
-import { getScheduleBlocks, createScheduleBlock as apiCreateScheduleBlock, deleteScheduleBlock as apiDeleteScheduleBlock } from "../api/schedule";
-import type { User, Course, ScheduleBlock, UserContextType } from "./types";
+import { getScheduleBlocks, createScheduleBlock as apiCreateScheduleBlock, deleteScheduleBlock as apiDeleteScheduleBlock, getAssistantCourses } from "../api/schedule";
+import type { User, Course, ScheduleBlock, AssistantCourse, UserContextType } from "./types";
 
 export { USER_ROLES };
 export type { UserRole };
@@ -51,6 +51,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return loadFromStorage<ScheduleBlock[]>("userSchedule", []);
   });
 
+  const [blockedBlocks, setBlockedBlocks] = useState<ScheduleBlock[]>([]);
+
   const [allCourses, setAllCourses] = useState<Course[]>(() => {
     const saved = loadFromStorage<Course[] | null>("allCourses", null);
     return saved || INITIAL_COURSES;
@@ -59,6 +61,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
     return loadFromStorage<boolean>("sidebarCollapsed", false);
   });
+
+  const [assistantCourses, setAssistantCourses] = useState<AssistantCourse[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<AssistantCourse | null>(null);
 
   const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => !prev);
@@ -89,11 +94,29 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  const loadAssistantData = useCallback(async () => {
+    if (!user || user.role !== USER_ROLES.ASSISTANT) return;
+    
+    try {
+      const [courses, blocked] = await Promise.all([
+        getAssistantCourses(user.id),
+        getScheduleBlocks(user.id, "student"),
+      ]);
+      setAssistantCourses(courses);
+      setBlockedBlocks(blocked);
+    } catch (error) {
+      console.error("Error loading assistant data:", error);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user) {
       loadSchedule();
+      if (user.role === USER_ROLES.ASSISTANT) {
+        loadAssistantData();
+      }
     }
-  }, [user, loadSchedule]);
+  }, [user, loadSchedule, loadAssistantData]);
 
   useEffect(() => {
     if (user) {
@@ -241,6 +264,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         schedule,
         allCourses,
         sidebarCollapsed,
+        assistantCourses,
+        selectedCourse,
+        blockedBlocks,
         addCourse,
         addScheduleBlock,
         removeScheduleBlock,
@@ -252,6 +278,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         refreshAccessToken,
         toggleSidebar,
         loadSchedule,
+        loadAssistantData,
+        setSelectedCourse,
       }}
     >
       {children}

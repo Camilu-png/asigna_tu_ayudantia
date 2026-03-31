@@ -1,11 +1,19 @@
 import { useUser, USER_ROLES } from '../context/UserContext';
 
 export default function Sidebar() {
-  const { user, logout, sidebarCollapsed, toggleSidebar } = useUser();
+  const { user, logout, sidebarCollapsed, toggleSidebar, assistantCourses, selectedCourse, setSelectedCourse } = useUser();
 
   if (!user) return null;
 
   const isAssistant = user.role === USER_ROLES.ASSISTANT;
+
+  const handleCourseClick = (course: typeof assistantCourses[0]) => {
+    if (selectedCourse?.id === course.id) {
+      setSelectedCourse(null);
+    } else {
+      setSelectedCourse(course);
+    }
+  };
 
   return (
     <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
@@ -23,7 +31,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        <a href="#" className="sidebar-link active">
+        <a href="#" className={`sidebar-link ${!selectedCourse ? 'active' : ''}`}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
@@ -31,11 +39,15 @@ export default function Sidebar() {
           {!sidebarCollapsed && <span>Home</span>}
         </a>
 
-        {isAssistant && !sidebarCollapsed && (
+        {isAssistant && !sidebarCollapsed && assistantCourses.length > 0 && (
           <div className="sidebar-section">
             <span className="sidebar-section-title">Mis asignaturas</span>
-            {user.courses.map((course) => (
-              <div key={course.id} className="sidebar-course">
+            {assistantCourses.map((course) => (
+              <div 
+                key={course.id} 
+                className={`sidebar-course ${selectedCourse?.id === course.id ? 'selected' : ''}`}
+                onClick={() => handleCourseClick(course)}
+              >
                 <span className="course-dot" style={{ backgroundColor: course.color }} />
                 <span className="course-name">{course.name}</span>
               </div>

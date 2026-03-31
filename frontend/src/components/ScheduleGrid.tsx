@@ -14,10 +14,11 @@ interface BlockInfo {
   color: string | null;
   startTime: string;
   endTime: string;
+  isBlocked?: boolean;
 }
 
 export default function ScheduleGrid() {
-  const { schedule } = useUser();
+  const { schedule, blockedBlocks } = useUser();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState({ day: 0, hour: 0 });
 
@@ -57,9 +58,55 @@ export default function ScheduleGrid() {
     return map;
   }, [schedule]);
 
+  const blockedMap = useMemo(() => {
+    const map: Record<string, BlockInfo[]> = {};
+    DAYS_EN.forEach(day => {
+      map[day] = [];
+    });
+    
+    blockedBlocks.forEach(block => {
+      const dayIndex = DAYS_EN.indexOf(block.day);
+      if (dayIndex === -1) return;
+      
+      const day = block.day;
+      if (!map[day]) map[day] = [];
+      
+      map[day].push({
+        id: block.id,
+        courseName: block.course_name,
+        courseCode: block.course_code,
+        color: block.color,
+        startTime: block.start_time,
+        endTime: block.end_time,
+        isBlocked: true,
+      });
+    });
+    
+    return map;
+  }, [blockedBlocks]);
+
   const getBlocksForCell = (day: string, hour: number): BlockInfo[] => {
     const blocks = scheduleMap[day] || [];
-    return blocks.filter(block => {
+    const blocked = blockedMap[day] || [];
+    
+    const activeBlocks = blocks.filter(block => {
+      const startHour = parseInt(block.startTime.split(':')[0]);
+      const endHour = parseInt(block.endTime.split(':')[0]);
+      return hour >= startHour && hour < endHour;
+    });
+    
+    const blockedInCell = blocked.filter(block => {
+      const startHour = parseInt(block.startTime.split(':')[0]);
+      const endHour = parseInt(block.endTime.split(':')[0]);
+      return hour >= startHour && hour < endHour;
+    });
+    
+    return [...activeBlocks, ...blockedInCell];
+  };
+
+  const isCellBlocked = (day: string, hour: number): boolean => {
+    const blocked = blockedMap[day] || [];
+    return blocked.some(block => {
       const startHour = parseInt(block.startTime.split(':')[0]);
       const endHour = parseInt(block.endTime.split(':')[0]);
       return hour >= startHour && hour < endHour;
@@ -82,12 +129,15 @@ export default function ScheduleGrid() {
               <div className="schedule-hour-label">{hour}:00</div>
               {DAYS_EN.map((dayEn, dayIndex) => {
                 const blocks = getBlocksForCell(dayEn, hour);
+                const isBlocked = isCellBlocked(dayEn, hour);
+                const hasActiveBlocks = blocks.some(b => !b.isBlocked);
                 return (
                   <ScheduleCell
                     key={`${dayIndex}-${hour}`}
                     day={dayIndex}
                     hour={hour}
                     blocks={blocks}
+                    isBlocked={isBlocked && !hasActiveBlocks}
                     onClick={() => handleCellClick(dayIndex, HOURS.indexOf(hour))}
                   />
                 );
