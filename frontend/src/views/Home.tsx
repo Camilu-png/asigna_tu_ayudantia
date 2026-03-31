@@ -5,7 +5,7 @@ import ChatBot from "../components/ChatBot";
 import "../styles/home.css";
 
 function Home() {
-  const { user } = useUser();
+  const { user, sidebarCollapsed } = useUser();
 
   if (!user) {
     return null;
@@ -15,7 +15,7 @@ function Home() {
   const roleLabel = isAssistant ? "Ayudante" : "Estudiante";
 
   return (
-    <div className="home-layout">
+    <div className={`home-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <Sidebar />
       <main className="home-main">
         <header className="home-header">

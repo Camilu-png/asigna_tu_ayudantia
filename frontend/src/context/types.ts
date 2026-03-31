@@ -29,6 +29,7 @@ export interface UserContextType {
   user: User | null;
   schedule: ScheduleBlock[];
   allCourses: Course[];
+  sidebarCollapsed: boolean;
   addCourse: (course: Course) => void;
   addScheduleBlock: (block: Omit<ScheduleBlock, 'id'>) => void;
   removeScheduleBlock: (blockId: number) => void;
@@ -38,4 +39,5 @@ export interface UserContextType {
   isLoading: boolean;
   token: string | null;
   refreshAccessToken: () => Promise<boolean>;
+  toggleSidebar: () => void;
 }

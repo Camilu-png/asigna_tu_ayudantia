@@ -55,6 +55,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return saved || INITIAL_COURSES;
   });
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    return loadFromStorage<boolean>("sidebarCollapsed", false);
+  });
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed((prev) => !prev);
+  }, []);
+
   const refreshAccessToken = useCallback(async () => {
     if (!refreshToken) return false;
     try {
@@ -102,6 +110,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem("userSchedule", JSON.stringify(schedule));
   }, [schedule]);
+
+  useEffect(() => {
+    localStorage.setItem("sidebarCollapsed", JSON.stringify(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
     setIsLoading(false);
@@ -168,6 +180,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         user,
         schedule,
         allCourses,
+        sidebarCollapsed,
         addCourse,
         addScheduleBlock,
         removeScheduleBlock,
@@ -177,6 +190,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         token,
         refreshAccessToken,
+        toggleSidebar,
       }}
     >
       {children}
