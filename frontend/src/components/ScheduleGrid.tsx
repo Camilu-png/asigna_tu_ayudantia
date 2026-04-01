@@ -77,7 +77,7 @@ export default function ScheduleGrid() {
     return blocks.some(block => {
       const startHour = parseInt(block.startTime.split(':')[0]);
       const endHour = parseInt(block.endTime.split(':')[0]);
-      return hour >= startHour && hour < endHour;
+      return hour >= startHour && hour < endHour && block.isBlocked;
     });
   };
 
