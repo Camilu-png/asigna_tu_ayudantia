@@ -1,7 +1,8 @@
-import './App.css'
-import { UserProvider, useUser } from './context/UserContext'
-import Home from './views/Home'
-import Login from './views/Login'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { UserProvider, useUser } from "./context/UserContext";
+import Home from "./views/Home";
+import Login from "./views/Login";
+import CourseView from "./views/CourseView";
 
 function AppContent() {
   const { user, isLoading } = useUser();
@@ -10,15 +11,25 @@ function AppContent() {
     return null;
   }
 
-  return user ? <Home /> : <Login />;
-}
-
-function App() {
-  return(
-    <UserProvider>
-      <AppContent />
-    </UserProvider>
+  return user ? (
+    <Routes>
+      <Route path="/home" element={<Home />} />
+      <Route path="/courses/:id" element={<CourseView />} />
+      <Route path="*" element={<Navigate to="/home" replace />} />
+    </Routes>
+  ) : (
+    <Login />
   );
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <UserProvider>
+        <AppContent />
+      </UserProvider>
+    </BrowserRouter>
+  );
+}
+
+export default App;
