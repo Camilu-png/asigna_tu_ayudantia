@@ -11,6 +11,25 @@ export interface ScheduleBlock {
   color: string | null;
 }
 
+export interface AssistantCourse {
+  id: number;
+  name: string;
+  code: string;
+  professor: string;
+  credits: number;
+  color: string;
+}
+
+export const getAssistantCourses = async (assistantId: number): Promise<AssistantCourse[]> => {
+  try {
+    const response = await api.get(`/assistant/courses/${assistantId}`);
+    return response.data.courses || [];
+  } catch (error) {
+    console.error("Error fetching assistant courses:", error);
+    throw error;
+  }
+};
+
 export const getScheduleBlocks = async (userId: number, userRole: string): Promise<ScheduleBlock[]> => {
   try {
     const response = await api.get(`/schedule/blocks/${userId}/${userRole}`);

@@ -4,7 +4,7 @@ import ScheduleGrid from "../components/ScheduleGrid";
 import ChatBot from "../components/ChatBot";
 import "../styles/home.css";
 
-function Home() {
+function CourseView() {
   const { user, sidebarCollapsed, selectedCourse } = useUser();
 
   if (!user) {
@@ -42,4 +42,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default CourseView;

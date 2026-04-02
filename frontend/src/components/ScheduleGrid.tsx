@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ScheduleCell from './ScheduleCell';
 import CourseModal from './CourseModal';
@@ -14,10 +15,13 @@ interface BlockInfo {
   color: string | null;
   startTime: string;
   endTime: string;
+  isBlocked?: boolean;
 }
 
 export default function ScheduleGrid() {
   const { schedule } = useUser();
+  const location = useLocation();
+  const isCourseView = location.pathname.startsWith('/courses/');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState({ day: 0, hour: 0 });
 
@@ -51,18 +55,29 @@ export default function ScheduleGrid() {
         color: block.color,
         startTime: block.start_time,
         endTime: block.end_time,
+        isBlocked: isCourseView,
       });
     });
     
     return map;
-  }, [schedule]);
+  }, [schedule, isCourseView]);
 
   const getBlocksForCell = (day: string, hour: number): BlockInfo[] => {
     const blocks = scheduleMap[day] || [];
+    
     return blocks.filter(block => {
       const startHour = parseInt(block.startTime.split(':')[0]);
       const endHour = parseInt(block.endTime.split(':')[0]);
       return hour >= startHour && hour < endHour;
+    });
+  };
+
+  const isCellBlocked = (day: string, hour: number): boolean => {
+    const blocks = scheduleMap[day] || [];
+    return blocks.some(block => {
+      const startHour = parseInt(block.startTime.split(':')[0]);
+      const endHour = parseInt(block.endTime.split(':')[0]);
+      return hour >= startHour && hour < endHour && block.isBlocked;
     });
   };
 
@@ -82,12 +97,14 @@ export default function ScheduleGrid() {
               <div className="schedule-hour-label">{hour}:00</div>
               {DAYS_EN.map((dayEn, dayIndex) => {
                 const blocks = getBlocksForCell(dayEn, hour);
+                const isBlocked = isCellBlocked(dayEn, hour);
                 return (
                   <ScheduleCell
                     key={`${dayIndex}-${hour}`}
                     day={dayIndex}
                     hour={hour}
                     blocks={blocks}
+                    isBlocked={isBlocked}
                     onClick={() => handleCellClick(dayIndex, HOURS.indexOf(hour))}
                   />
                 );

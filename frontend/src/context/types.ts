@@ -5,6 +5,15 @@ export interface Course {
   color: string;
 }
 
+export interface AssistantCourse {
+  id: number;
+  name: string;
+  code: string;
+  professor: string;
+  credits: number;
+  color: string;
+}
+
 export type UserRole = 'student' | 'assistant';
 
 export interface User {
@@ -47,6 +56,9 @@ export interface UserContextType {
   schedule: ScheduleBlock[];
   allCourses: Course[];
   sidebarCollapsed: boolean;
+  assistantCourses: AssistantCourse[];
+  selectedCourse: AssistantCourse | null;
+  blockedBlocks: ScheduleBlock[];
   addCourse: (course: Course) => void;
   addScheduleBlock: (block: CreateScheduleBlockRequest) => Promise<void>;
   removeScheduleBlock: (blockId: number) => Promise<void>;
@@ -58,4 +70,6 @@ export interface UserContextType {
   refreshAccessToken: () => Promise<boolean>;
   toggleSidebar: () => void;
   loadSchedule: () => Promise<void>;
+  loadAssistantData: () => Promise<void>;
+  setSelectedCourse: (course: AssistantCourse | null) => void;
 }

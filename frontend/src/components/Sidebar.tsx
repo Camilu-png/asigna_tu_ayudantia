@@ -1,11 +1,30 @@
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser, USER_ROLES } from '../context/UserContext';
 
 export default function Sidebar() {
-  const { user, logout, sidebarCollapsed, toggleSidebar } = useUser();
+  const { user, logout, sidebarCollapsed, toggleSidebar, assistantCourses, selectedCourse, setSelectedCourse } = useUser();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   if (!user) return null;
 
   const isAssistant = user.role === USER_ROLES.ASSISTANT;
+  const isHomeActive = location.pathname === '/home';
+
+  const handleHomeClick = () => {
+    setSelectedCourse(null);
+    navigate('/home');
+  };
+
+  const handleCourseClick = (course: typeof assistantCourses[0]) => {
+    if (selectedCourse?.id === course.id) {
+      setSelectedCourse(null);
+      navigate('/home');
+    } else {
+      setSelectedCourse(course);
+      navigate(`/courses/${course.id}`);
+    }
+  };
 
   return (
     <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
@@ -23,19 +42,26 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        <a href="#" className="sidebar-link active">
+        <div 
+          className={`sidebar-link ${isHomeActive ? 'active' : ''}`}
+          onClick={handleHomeClick}
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
           {!sidebarCollapsed && <span>Home</span>}
-        </a>
+        </div>
 
-        {isAssistant && !sidebarCollapsed && (
+        {isAssistant && !sidebarCollapsed && assistantCourses.length > 0 && (
           <div className="sidebar-section">
             <span className="sidebar-section-title">Mis asignaturas</span>
-            {user.courses.map((course) => (
-              <div key={course.id} className="sidebar-course">
+            {assistantCourses.map((course) => (
+              <div 
+                key={course.id} 
+                className={`sidebar-course ${selectedCourse?.id === course.id ? 'selected' : ''}`}
+                onClick={() => handleCourseClick(course)}
+              >
                 <span className="course-dot" style={{ backgroundColor: course.color }} />
                 <span className="course-name">{course.name}</span>
               </div>
