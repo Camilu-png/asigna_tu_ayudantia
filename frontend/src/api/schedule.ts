@@ -88,3 +88,13 @@ export const getCourses = async () => {
     throw error;
   }
 };
+
+export const runSolver = async (courseId: number, save: boolean = false) => {
+  try {
+    const response = await api.post("/solver/solve", { course_id: courseId, save });
+    return response.data;
+  } catch (error) {
+    console.error("Error running solver:", error);
+    throw error;
+  }
+};

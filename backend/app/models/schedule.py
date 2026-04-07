@@ -4,6 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, ForeignKey, UniqueConstraint
 from app.db.base import Base
 from app.models.constants import DEFAULT_COURSE_COLOR
+from app.models.assistant_help_block import AssistantHelpBlock
 
 
 class ScheduleBlock(Base):
@@ -20,6 +21,9 @@ class ScheduleBlock(Base):
         back_populates="schedule_block"
     )
     assistant_schedules: Mapped[list["AssistantSchedule"]] = relationship(
+        back_populates="schedule_block"
+    )
+    assistant_help_blocks: Mapped[list["AssistantHelpBlock"]] = relationship(
         back_populates="schedule_block"
     )
 

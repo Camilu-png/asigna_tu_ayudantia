@@ -5,6 +5,7 @@ from sqlalchemy import String, Integer
 from app.db.base import Base
 from app.models.schedule import AssistantSchedule
 from app.models.assistant_course import AssistantCourse
+from app.models.assistant_help_block import AssistantHelpBlock
 
 
 class Assistant(Base):
@@ -19,5 +20,8 @@ class Assistant(Base):
         back_populates="assistant"
     )
     teaching_courses: Mapped[list["AssistantCourse"]] = relationship(
+        back_populates="assistant"
+    )
+    help_blocks: Mapped[list["AssistantHelpBlock"]] = relationship(
         back_populates="assistant"
     )
