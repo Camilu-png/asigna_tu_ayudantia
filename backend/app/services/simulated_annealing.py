@@ -1,6 +1,10 @@
+import logging
+import random
 import numpy as np
 from dataclasses import dataclass
 from typing import Callable
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -119,8 +123,6 @@ def fitness(solution: Solution, data: ScheduleData) -> float:
 
 
 def random_move(solution: Solution) -> Solution:
-    import random
-
     new_solution = solution.copy()
     occupied = new_solution.occupied_slots()
 
@@ -189,5 +191,5 @@ def simulated_annealing(
         temperature *= alpha
         iteration += 1
 
-    print(f"Iterations: {iteration}, Best fitness: {best_fitness}")
+    logger.info(f"Iterations: {iteration}, Best fitness: {best_fitness}")
     return best_solution

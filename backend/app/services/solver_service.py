@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from app.models.schedule import ScheduleBlock, AssistantSchedule
 from app.models.assistant import Assistant
 from app.models.assistant_help_block import AssistantHelpBlock
+from app.models.constants import DAY_MAP
 from app.services.simulated_annealing import (
     ScheduleData,
     Solution,
@@ -13,17 +14,6 @@ from app.services.simulated_annealing import (
     validate_solution,
     fitness,
 )
-
-
-DAY_MAP = {
-    "Monday": 0,
-    "Tuesday": 1,
-    "Wednesday": 2,
-    "Thursday": 3,
-    "Friday": 4,
-    "Saturday": 5,
-    "Sunday": 6,
-}
 
 
 class SolverService:
