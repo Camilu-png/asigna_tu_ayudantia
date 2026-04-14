@@ -90,13 +90,22 @@ class SolverService:
 
         solution = Solution(data)
 
+        assistants_assigned_today = {}
+
         for slot in range(data.num_slots):
             for day in range(data.num_days):
-                if not solution.is_assigned(slot, day):
-                    for assistant in range(data.num_assistants):
-                        if solution.is_available(slot, day, assistant):
-                            solution.assign(slot, day, assistant)
-                            break
+                if solution.is_assigned(slot, day):
+                    continue
+
+                used_today = assistants_assigned_today.get(day, set())
+
+                for assistant in range(data.num_assistants):
+                    if assistant in used_today:
+                        continue
+                    if solution.is_available(slot, day, assistant):
+                        solution.assign(slot, day, assistant)
+                        assistants_assigned_today.setdefault(day, set()).add(assistant)
+                        break
 
         result = simulated_annealing(
             solution=solution,
@@ -111,7 +120,8 @@ class SolverService:
         if not valid:
             return {"success": False, "message": f"Invalid solution: {message}"}
 
-        assistant_ids = [a.id for a in await self.db.execute(select(Assistant))]
+        result_assistants = await self.db.execute(select(Assistant))
+        assistant_ids = [a.id for a in result_assistants.scalars().all()]
         assistant_map = {idx: aid for idx, aid in enumerate(assistant_ids)}
 
         assignments = []
@@ -119,11 +129,12 @@ class SolverService:
             for day in range(result.data.num_days):
                 for assistant in range(result.data.num_assistants):
                     if result.X[slot, day, assistant] == 1:
-                        block_id = result.data.blocks[slot, 0]
+                        block_id = int(result.data.blocks[slot, 0])
+                        assistant_id = int(assistant_map[assistant])
                         assignments.append(
                             {
                                 "block_id": block_id,
-                                "assistant_id": assistant_map[assistant],
+                                "assistant_id": assistant_id,
                             }
                         )
 
@@ -131,7 +142,7 @@ class SolverService:
             "success": True,
             "message": "Solution found",
             "assignments": assignments,
-            "fitness": fitness(result, data),
+            "fitness": float(fitness(result, data)),
         }
 
     async def save_solution(self, course_id: int, assignments: list[dict]) -> dict:
