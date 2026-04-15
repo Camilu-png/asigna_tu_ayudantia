@@ -6,6 +6,7 @@ from app.db.base import Base
 from app.models.schedule import ScheduleBlock
 from app.models.assistant_course import AssistantCourse
 from app.models.assistant_help_block import AssistantHelpBlock
+from app.models.user_course import UserCourse
 
 
 class Course(Base):
@@ -26,3 +27,4 @@ class Course(Base):
     assistant_help_blocks: Mapped[list["AssistantHelpBlock"]] = relationship(
         back_populates="course"
     )
+    user_courses: Mapped[list["UserCourse"]] = relationship(back_populates="course")

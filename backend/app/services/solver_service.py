@@ -3,8 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.schedule import ScheduleBlock, AssistantSchedule
-from app.models.assistant import Assistant
+from app.models.schedule import ScheduleBlock, UserSchedule
+from app.models.user import User
+from app.models.user_course import UserCourse
 from app.models.assistant_help_block import AssistantHelpBlock
 from app.models.constants import DAY_MAP
 from app.services.simulated_annealing import (
@@ -20,6 +21,15 @@ class SolverService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def _get_assistants(self):
+        result = await self.db.execute(
+            select(UserCourse)
+            .where(UserCourse.role == "ASSISTANT")
+            .options(selectinload(UserCourse.user))
+        )
+        user_courses = result.scalars().all()
+        return [uc.user for uc in user_courses if uc.user]
+
     async def get_schedule_data(self, course_id: int) -> ScheduleData:
         result = await self.db.execute(
             select(ScheduleBlock)
@@ -32,13 +42,10 @@ class SolverService:
         if not course_blocks:
             raise ValueError(f"No schedule blocks found for course {course_id}")
 
-        result = await self.db.execute(select(Assistant))
-        assistants = result.scalars().all()
+        assistants = await self._get_assistants()
 
         result = await self.db.execute(
-            select(AssistantSchedule).options(
-                selectinload(AssistantSchedule.schedule_block)
-            )
+            select(UserSchedule).options(selectinload(UserSchedule.schedule_block))
         )
         existing_schedules = result.scalars().all()
 
@@ -68,7 +75,7 @@ class SolverService:
         for sched in existing_schedules:
             if sched.schedule_block_id in block_ids:
                 block_idx = block_ids.index(sched.schedule_block_id)
-                assistant_idx = assistant_map.get(sched.assistant_id)
+                assistant_idx = assistant_map.get(sched.user_id)
                 if assistant_idx is not None:
                     day_idx = unique_days.index(sched.schedule_block.day)
                     availability[block_idx, day_idx, assistant_idx] = 1
@@ -120,8 +127,8 @@ class SolverService:
         if not valid:
             return {"success": False, "message": f"Invalid solution: {message}"}
 
-        result_assistants = await self.db.execute(select(Assistant))
-        assistant_ids = [a.id for a in result_assistants.scalars().all()]
+        assistants = await self._get_assistants()
+        assistant_ids = [a.id for a in assistants]
         assistant_map = {idx: aid for idx, aid in enumerate(assistant_ids)}
 
         assignments = []

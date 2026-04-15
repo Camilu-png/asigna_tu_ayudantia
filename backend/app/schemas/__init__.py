@@ -46,7 +46,6 @@ class ScheduleBlockResponse(ScheduleBlockBase):
 
 class CreateScheduleBlockRequest(BaseModel):
     user_id: int
-    user_role: UserRole
     day: str = Field(..., min_length=1, max_length=20)
     start_time: str = Field(..., min_length=1, max_length=10)
     end_time: str = Field(..., min_length=1, max_length=10)

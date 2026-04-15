@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Union
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import (
@@ -18,8 +18,8 @@ from app.core.config import (
 )
 from app.core.security import verify_password
 from app.db.session import get_db
-from app.models.assistant import Assistant
-from app.models.student import Student
+from app.models.user import User
+from app.models.user_course import UserCourse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -65,6 +65,17 @@ def create_refresh_token(data: dict) -> str:
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+async def get_user_role(db: AsyncSession, user_id: int) -> str:
+    result = await db.execute(select(UserCourse).where(UserCourse.user_id == user_id))
+    user_courses = result.scalars().all()
+    roles = set(uc.role for uc in user_courses)
+    if "ASSISTANT" in roles:
+        return "assistant"
+    if "STUDENT" in roles:
+        return "student"
+    return "user"
+
+
 async def get_current_user(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ) -> UserResponse:
@@ -88,14 +99,8 @@ async def get_current_user(
     if not isinstance(email, str) or not isinstance(role, str):
         raise credentials_exception
 
-    if role == "student":
-        result = await db.execute(select(Student).where(Student.email == email))
-        user = result.scalar_one_or_none()
-    elif role == "assistant":
-        result = await db.execute(select(Assistant).where(Assistant.email == email))
-        user = result.scalar_one_or_none()
-    else:
-        raise credentials_exception
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
 
     if user is None:
         raise credentials_exception
@@ -110,22 +115,8 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(Student).where(Student.email == form_data.username)
-    )
-    student = result.scalar_one_or_none()
-
-    role = "student"
-    user = student
-
-    if not student:
-        result = await db.execute(
-            select(Assistant).where(Assistant.email == form_data.username)
-        )
-        assistant = result.scalar_one_or_none()
-        if assistant:
-            user = assistant
-            role = "assistant"
+    result = await db.execute(select(User).where(User.email == form_data.username))
+    user = result.scalar_one_or_none()
 
     if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
@@ -133,6 +124,8 @@ async def login(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    role = await get_user_role(db, user.id)
 
     access_token = create_access_token(data={"sub": user.email, "role": role})
     refresh_token = create_refresh_token(data={"sub": user.email, "role": role})

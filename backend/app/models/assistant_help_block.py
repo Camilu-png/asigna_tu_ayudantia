@@ -17,7 +17,7 @@ class AssistantHelpBlock(Base):
         ForeignKey("schedule_blocks.id"), nullable=False
     )
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), nullable=False)
-    color: Mapped[str] = mapped_column(String(7), default=DEFAULT_COURSE_COLOR)
+    color: Mapped[str] = mapped_column(String(7), nullable=True)
 
     assistant: Mapped["Assistant"] = relationship(back_populates="help_blocks")
     schedule_block: Mapped["ScheduleBlock"] = relationship(

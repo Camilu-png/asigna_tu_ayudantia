@@ -6,7 +6,6 @@ from app.services.schedule_service import ScheduleService
 from app.schemas import (
     CreateScheduleBlockRequest,
     ScheduleBlockWithUserResponse,
-    UserRole,
 )
 
 
@@ -41,17 +40,16 @@ async def create_schedule_block(
 
 
 @router.get(
-    "/blocks/{user_id}/{user_role}",
+    "/blocks/{user_id}",
     response_model=list[ScheduleBlockWithUserResponse],
 )
 async def get_user_schedule(
     user_id: int,
-    user_role: UserRole,
     db: AsyncSession = Depends(get_db),
 ):
     service = ScheduleService(db)
     try:
-        result = await service.get_user_schedule(user_id, user_role)
+        result = await service.get_user_schedule(user_id)
         return result
     except Exception as e:
         raise HTTPException(
@@ -67,12 +65,11 @@ async def get_user_schedule(
 async def delete_schedule_block(
     block_id: int,
     user_id: int,
-    user_role: UserRole,
     db: AsyncSession = Depends(get_db),
 ):
     service = ScheduleService(db)
     try:
-        deleted = await service.delete_schedule_block(block_id, user_id, user_role)
+        deleted = await service.delete_schedule_block(block_id, user_id)
         if not deleted:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
