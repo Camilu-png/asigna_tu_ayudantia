@@ -8,16 +8,9 @@ from app.db.session import get_db
 from app.models.course import Course
 from app.models.user import User
 from app.models.user_course import UserCourse
+from app.api.v1.auth import get_current_admin, get_current_user, UserResponse
 
 router = APIRouter()
-
-
-class UserCourseResponse(BaseModel):
-    id: int
-    user_id: int
-    course_id: int
-    role: str
-    color: str | None
 
 
 class EnrollRequest(BaseModel):
@@ -45,7 +38,11 @@ async def get_courses(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{course_id}/students")
-async def get_course_students(course_id: int, db: AsyncSession = Depends(get_db)):
+async def get_course_students(
+    course_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin: UserResponse = Depends(get_current_admin),
+):
     result = await db.execute(
         select(UserCourse)
         .options(selectinload(UserCourse.user))
@@ -67,7 +64,11 @@ async def get_course_students(course_id: int, db: AsyncSession = Depends(get_db)
 
 
 @router.get("/{course_id}/assistants")
-async def get_course_assistants(course_id: int, db: AsyncSession = Depends(get_db)):
+async def get_course_assistants(
+    course_id: int,
+    db: AsyncSession = Depends(get_db),
+    admin: UserResponse = Depends(get_current_admin),
+):
     result = await db.execute(
         select(UserCourse)
         .options(selectinload(UserCourse.user))
@@ -90,7 +91,10 @@ async def get_course_assistants(course_id: int, db: AsyncSession = Depends(get_d
 
 @router.post("/{user_id}/enroll")
 async def enroll_user(
-    user_id: int, request: EnrollRequest, db: AsyncSession = Depends(get_db)
+    user_id: int,
+    request: EnrollRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: UserResponse = Depends(get_current_admin),
 ):
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -174,7 +178,11 @@ async def enroll_user(
 
 @router.delete("/{user_id}/enroll/{course_id}")
 async def unenroll_user(
-    user_id: int, course_id: int, role: str, db: AsyncSession = Depends(get_db)
+    user_id: int,
+    course_id: int,
+    role: str,
+    db: AsyncSession = Depends(get_db),
+    admin: UserResponse = Depends(get_current_admin),
 ):
     result = await db.execute(
         select(UserCourse).where(

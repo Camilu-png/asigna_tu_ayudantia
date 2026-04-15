@@ -15,6 +15,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(20), nullable=False, default="USER")
 
     user_courses: Mapped[list["UserCourse"]] = relationship(back_populates="user")
     user_schedules: Mapped[list["UserSchedule"]] = relationship(back_populates="user")

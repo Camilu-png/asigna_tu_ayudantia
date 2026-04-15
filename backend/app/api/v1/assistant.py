@@ -10,7 +10,7 @@ from app.models.user_course import UserCourse
 from app.models.course import Course
 from app.models.schedule import ScheduleBlock
 from app.models.assistant_help_block import AssistantHelpBlock
-from app.models.constants import DEFAULT_COURSE_COLOR
+from app.api.v1.auth import get_current_user, get_current_admin, UserResponse
 
 router = APIRouter(tags=["assistant"])
 
@@ -21,19 +21,18 @@ class AssistantHelpBlockCreate(BaseModel):
     color: str | None = None
 
 
-class AssistantHelpBlockResponse(BaseModel):
-    id: int
-    assistant_id: int
-    schedule_block_id: int
-    course_id: int
-    color: str | None
-
-
 @router.get("/{user_id}/courses")
 async def get_assistant_courses(
     user_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
 ):
+    if current_user.role != "ADMIN" and current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only view your own courses",
+        )
+
     result = await db.execute(
         select(UserCourse)
         .options(selectinload(UserCourse.course))
@@ -57,80 +56,18 @@ async def get_assistant_courses(
     }
 
 
-@router.post("/{user_id}/courses")
-async def add_assistant_course(
-    user_id: int,
-    course_id: int,
-    color: str | None = None,
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    result = await db.execute(select(Course).where(Course.id == course_id))
-    course = result.scalar_one_or_none()
-    if not course:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Course not found",
-        )
-
-    result = await db.execute(
-        select(UserCourse).where(
-            UserCourse.user_id == user_id,
-            UserCourse.course_id == course_id,
-            UserCourse.role == "ASSISTANT",
-        )
-    )
-    existing = result.scalar_one_or_none()
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Course already assigned to assistant",
-        )
-
-    result = await db.execute(
-        select(UserCourse).where(
-            UserCourse.user_id == user_id,
-            UserCourse.course_id == course_id,
-            UserCourse.role == "STUDENT",
-        )
-    )
-    if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User cannot be both student and assistant in the same course",
-        )
-
-    user_course = UserCourse(
-        user_id=user_id,
-        course_id=course_id,
-        role="ASSISTANT",
-        color=color,
-    )
-    db.add(user_course)
-    await db.commit()
-    await db.refresh(user_course)
-
-    return {
-        "id": user_course.id,
-        "user_id": user_course.user_id,
-        "course_id": user_course.course_id,
-        "role": user_course.role,
-        "color": user_course.color,
-    }
-
-
 @router.get("/{user_id}/help-blocks")
 async def get_assistant_help_blocks(
     user_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
 ):
+    if current_user.role != "ADMIN" and current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only view your own help blocks",
+        )
+
     result = await db.execute(
         select(AssistantHelpBlock)
         .options(
@@ -165,7 +102,14 @@ async def add_assistant_help_block(
     user_id: int,
     request: AssistantHelpBlockCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
 ):
+    if current_user.role != "ADMIN" and current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only manage your own help blocks",
+        )
+
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
@@ -243,7 +187,14 @@ async def delete_assistant_help_block(
     user_id: int,
     help_block_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
 ):
+    if current_user.role != "ADMIN" and current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only manage your own help blocks",
+        )
+
     result = await db.execute(
         select(AssistantHelpBlock).where(
             AssistantHelpBlock.id == help_block_id,
