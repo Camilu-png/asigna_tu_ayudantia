@@ -5,6 +5,7 @@ from sqlalchemy import String, Integer
 from app.db.base import Base
 from app.models.user_course import UserCourse
 from app.models.schedule import UserSchedule
+from app.models.assistant_help_block import AssistantHelpBlock
 
 
 class User(Base):
@@ -17,3 +18,6 @@ class User(Base):
 
     user_courses: Mapped[list["UserCourse"]] = relationship(back_populates="user")
     user_schedules: Mapped[list["UserSchedule"]] = relationship(back_populates="user")
+    help_blocks: Mapped[list["AssistantHelpBlock"]] = relationship(
+        back_populates="assistant"
+    )
