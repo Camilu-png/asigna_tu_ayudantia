@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, ForeignKey, UniqueConstraint
 from app.db.base import Base
-from backend.app.models.course import Course
-from backend.app.models.schedule import ScheduleBlock
-from backend.app.models.user import User
+
+if TYPE_CHECKING:
+    from app.models.course import Course
+    from app.models.schedule import ScheduleBlock
+    from app.models.user import User
 
 
 class AssistantHelpBlock(Base):

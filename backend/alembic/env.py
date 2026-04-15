@@ -12,17 +12,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.db.base import Base
 from app.models.course import Course
-from app.models.schedule import (
-    ScheduleBlock,
-    StudentSchedule,
-    AssistantSchedule,
-    UserSchedule,
-)
+from app.models.schedule import ScheduleBlock, UserSchedule
 from app.models.user import User
 from app.models.user_course import UserCourse
-from app.models.assistant import Assistant
-from app.models.student import Student
-from app.models.assistant_course import AssistantCourse
 from app.models.assistant_help_block import AssistantHelpBlock
 
 config = context.config
