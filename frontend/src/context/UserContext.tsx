@@ -38,11 +38,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [token, setToken] = useState<string | null>(() => {
-    return loadFromStorage<string | null>("token", null);
+    return localStorage.getItem("token");
   });
 
   const [refreshToken, setRefreshToken] = useState<string | null>(() => {
-    return loadFromStorage<string | null>("refreshToken", null);
+    return localStorage.getItem("refreshToken");
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +95,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const loadAssistantData = useCallback(async () => {
-    if (!user || user.role !== USER_ROLES.ASSISTANT) return;
+    if (!user || (user.role !== USER_ROLES.ASSISTANT && user.role !== 'ASSISTANT')) return;
     
     try {
       const [courses, blocked] = await Promise.all([
@@ -112,7 +112,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (user) {
       loadSchedule();
-      if (user.role === USER_ROLES.ASSISTANT) {
+      if (user.role === USER_ROLES.ASSISTANT || user.role === 'ASSISTANT') {
         loadAssistantData();
       }
     }
@@ -165,10 +165,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setToken(response.access_token);
     setRefreshToken(response.refresh_token);
 
-    const role =
+    const role: UserRole =
       response.user.role === "assistant"
         ? USER_ROLES.ASSISTANT
-        : USER_ROLES.STUDENT;
+        : response.user.role === "ADMIN"
+          ? "admin" as UserRole
+          : USER_ROLES.STUDENT;
 
     const newUser: User = {
       id: response.user.id,

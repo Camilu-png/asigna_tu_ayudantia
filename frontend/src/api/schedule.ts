@@ -30,9 +30,9 @@ export const getAssistantCourses = async (assistantId: number): Promise<Assistan
   }
 };
 
-export const getScheduleBlocks = async (userId: number, userRole: string): Promise<ScheduleBlock[]> => {
+export const getScheduleBlocks = async (userId: number, _userRole: string): Promise<ScheduleBlock[]> => {
   try {
-    const response = await api.get(`/schedule/blocks/${userId}/${userRole}`);
+    const response = await api.get(`/schedule/blocks/${userId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching schedule blocks:", error);

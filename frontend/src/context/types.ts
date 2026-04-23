@@ -14,7 +14,7 @@ export interface AssistantCourse {
   color: string;
 }
 
-export type UserRole = 'student' | 'assistant';
+export type UserRole = 'student' | 'assistant' | 'admin' | 'ADMIN' | 'USER' | 'ASSISTANT';
 
 export interface User {
   id: number;

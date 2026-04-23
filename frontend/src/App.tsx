@@ -3,6 +3,17 @@ import { UserProvider, useUser } from "./context/UserContext";
 import Home from "./views/Home";
 import Login from "./views/Login";
 import CourseView from "./views/CourseView";
+import AdminView from "./views/AdminView";
+
+function AdminRoute() {
+  const { user, token } = useUser();
+  
+  if (!token) {
+    return <Navigate to="/home" replace />;
+  }
+  
+  return user?.role === 'admin' || user?.role === 'ADMIN' ? <AdminView /> : <Navigate to="/home" replace />;
+}
 
 function AppContent() {
   const { user, isLoading } = useUser();
@@ -15,6 +26,7 @@ function AppContent() {
     <Routes>
       <Route path="/home" element={<Home />} />
       <Route path="/courses/:id" element={<CourseView />} />
+      <Route path="/admin" element={<AdminRoute />} />
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   ) : (

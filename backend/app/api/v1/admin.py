@@ -31,7 +31,6 @@ class UserUpdate(BaseModel):
 
 class AssignAssistantRequest(BaseModel):
     user_id: int
-    course_id: int
     color: Optional[str] = None
 
 
@@ -257,6 +256,12 @@ async def assign_assistant(
             detail="User not found",
         )
 
+    if user.role == "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot assign admin as assistant",
+        )
+
     result = await db.execute(select(Course).where(Course.id == course_id))
     course = result.scalar_one_or_none()
     if not course:
@@ -269,27 +274,28 @@ async def assign_assistant(
         select(UserCourse).where(
             UserCourse.user_id == request.user_id,
             UserCourse.course_id == course_id,
-            UserCourse.role == "STUDENT",
         )
     )
-    if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User is already a student in this course",
-        )
+    existing_enrollment = result.scalar_one_or_none()
 
-    result = await db.execute(
-        select(UserCourse).where(
-            UserCourse.user_id == request.user_id,
-            UserCourse.course_id == course_id,
-            UserCourse.role == "ASSISTANT",
-        )
-    )
-    if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User is already an assistant in this course",
-        )
+    if existing_enrollment:
+        if existing_enrollment.role == "ASSISTANT":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User is already an assistant in this course",
+            )
+        existing_enrollment.role = "ASSISTANT"
+        if request.color:
+            existing_enrollment.color = request.color
+        await db.commit()
+        await db.refresh(existing_enrollment)
+        return {
+            "id": existing_enrollment.id,
+            "user_id": existing_enrollment.user_id,
+            "course_id": existing_enrollment.course_id,
+            "role": existing_enrollment.role,
+            "color": existing_enrollment.color,
+        }
 
     user_course = UserCourse(
         user_id=request.user_id,

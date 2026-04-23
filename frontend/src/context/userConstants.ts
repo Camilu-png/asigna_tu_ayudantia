@@ -2,16 +2,17 @@ import type { UserRole } from './types';
 
 export const USER_ROLES = {
   STUDENT: 'student',
-  ASSISTANT: 'assistant'
+  ASSISTANT: 'assistant',
+  ADMIN: 'admin'
 } as const;
 
 export type { UserRole };
 
-export const MOCK_USERS: Record<UserRole, {
+export const MOCK_USERS: Record<string, {
   id: number;
   name: string;
   email: string;
-  role: UserRole;
+  role: string;
   courses: Array<{ id: number; name: string; code: string; color: string }>;
 }> = {
   [USER_ROLES.STUDENT]: {
@@ -33,6 +34,17 @@ export const MOCK_USERS: Record<UserRole, {
     courses: [
       { id: 4, name: 'Álgebra Lineal', code: 'MAT102', color: '#96CEB4' },
       { id: 5, name: 'Cálculo I', code: 'MAT101', color: '#FFEAA7' }
+    ]
+  },
+  [USER_ROLES.ADMIN]: {
+    id: 1,
+    name: 'Abatista',
+    email: 'abatista@admin.cl',
+    role: USER_ROLES.ADMIN,
+    courses: [
+      { id: 1, name: 'Cálculo II', code: 'MAT204', color: '#4ECDC4' },
+      { id: 2, name: 'Física I', code: 'FIS100', color: '#FF6B6B' },
+      { id: 3, name: 'Programación', code: 'INF201', color: '#45B7D1' }
     ]
   }
 };
