@@ -13,7 +13,7 @@ This frontend consumes the FastAPI backend and allows users to interact with the
 cd frontend
 
 docker compose up --build
-````
+```
 
 Application runs at: [http://localhost:3000](http://localhost:3000)
 
@@ -25,31 +25,28 @@ Application runs at: [http://localhost:3000](http://localhost:3000)
 
 The UI is designed around three main user roles:
 
-* **Students**
+- **Students**
+  - Define availability (schedule blocks)
+  - View assigned schedules
 
-  * Define availability (schedule blocks)
-  * View assigned schedules
+- **Assistants**
+  - See assigned courses and time blocks
+  - Manage availability constraints
 
-* **Assistants**
-
-  * See assigned courses and time blocks
-  * Manage availability constraints
-
-* **Admins**
-
-  * Manage users and courses
-  * Assign assistants
-  * Trigger optimization (Simulated Annealing)
+- **Admins**
+  - Manage users and courses
+  - Assign assistants
+  - Trigger optimization (Simulated Annealing)
 
 ---
 
 ## 🧩 Key Features
 
-* Schedule visualization using a grid-based layout
-* Real-time interaction with backend API (Axios)
-* Global state management via React Context
-* Role-based navigation and protected routes
-* Integration with optimization workflow (solver execution)
+- Schedule visualization using a grid-based layout
+- Real-time interaction with backend API (Axios)
+- Global state management via React Context
+- Role-based navigation and protected routes
+- Integration with optimization workflow (solver execution)
 
 ---
 
@@ -69,9 +66,9 @@ graph TD
     API --> BE
 ```
 
-* **Views** handle user interaction
-* **Context** manages global state (auth, schedules, courses)
-* **API layer** abstracts HTTP communication with backend
+- **Views** handle user interaction
+- **Context** manages global state (auth, schedules, courses)
+- **API layer** abstracts HTTP communication with backend
 
 ---
 
@@ -92,10 +89,10 @@ src/
 
 ## 🔐 Authentication Flow
 
-* Users authenticate via `/auth/login`
-* JWT access token is stored locally
-* Axios interceptor attaches token to each request
-* Protected routes restrict access by role
+- Users authenticate via `/auth/login`
+- JWT access token is stored locally
+- Axios interceptor attaches token to each request
+- Protected routes restrict access by role
 
 ---
 
@@ -120,18 +117,16 @@ flowchart LR
 
 ## 🧠 Design Notes
 
-* **React Context over Redux**
+- **React Context over Redux**
   Simpler state model, sufficient for current scale.
 
-* **Component-based UI**
+- **Component-based UI**
   Separation between views (pages) and reusable components improves maintainability.
 
-* **Grid-based schedule representation**
+- **Grid-based schedule representation**
   Designed for clarity when visualizing time blocks and constraints.
 
-* **Tight backend integration**
+- **Tight backend integration**
   Frontend acts as a thin layer over the API, keeping business logic in the backend.
 
 ---
-
-```
