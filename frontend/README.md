@@ -1,16 +1,137 @@
-# React + Vite
+# Frontend - Asigna tu ayudantía
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Single Page Application (SPA) built with React, TypeScript, and Vite.  
+Provides the user interface for managing schedules, courses, and assistant assignments.
 
-Currently, two official plugins are available:
+This frontend consumes the FastAPI backend and allows users to interact with the scheduling system and optimization workflow.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🚀 Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+cd frontend
 
-## Expanding the ESLint configuration
+docker compose up --build
+````
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Application runs at: [http://localhost:3000](http://localhost:3000)
+
+> ⚠️ Requires backend running at `http://localhost:8000`
+
+---
+
+## 🎯 What does this frontend do?
+
+The UI is designed around three main user roles:
+
+* **Students**
+
+  * Define availability (schedule blocks)
+  * View assigned schedules
+
+* **Assistants**
+
+  * See assigned courses and time blocks
+  * Manage availability constraints
+
+* **Admins**
+
+  * Manage users and courses
+  * Assign assistants
+  * Trigger optimization (Simulated Annealing)
+
+---
+
+## 🧩 Key Features
+
+* Schedule visualization using a grid-based layout
+* Real-time interaction with backend API (Axios)
+* Global state management via React Context
+* Role-based navigation and protected routes
+* Integration with optimization workflow (solver execution)
+
+---
+
+## 🏗️ Architecture Overview
+
+```mermaid
+graph TD
+    A[App.tsx - Router]
+    V[Views]
+    C[UserContext]
+    API[API Client]
+    BE[FastAPI Backend]
+
+    A --> V
+    V --> C
+    C --> API
+    API --> BE
+```
+
+* **Views** handle user interaction
+* **Context** manages global state (auth, schedules, courses)
+* **API layer** abstracts HTTP communication with backend
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── api/            # Axios-based HTTP client
+├── views/          # Application pages (routes)
+├── components/     # Reusable UI components
+├── context/        # Global state (UserContext)
+├── styles/         # CSS styles
+├── App.tsx         # Router configuration
+└── main.tsx        # Entry point
+```
+
+---
+
+## 🔐 Authentication Flow
+
+* Users authenticate via `/auth/login`
+* JWT access token is stored locally
+* Axios interceptor attaches token to each request
+* Protected routes restrict access by role
+
+---
+
+## 🔄 Data Flow
+
+```mermaid
+flowchart LR
+    UI[React UI]
+    CTX[UserContext]
+    API[Axios Client]
+    BE[Backend API]
+
+    UI --> CTX
+    CTX --> API
+    API --> BE
+    BE --> API
+    API --> CTX
+    CTX --> UI
+```
+
+---
+
+## 🧠 Design Notes
+
+* **React Context over Redux**
+  Simpler state model, sufficient for current scale.
+
+* **Component-based UI**
+  Separation between views (pages) and reusable components improves maintainability.
+
+* **Grid-based schedule representation**
+  Designed for clarity when visualizing time blocks and constraints.
+
+* **Tight backend integration**
+  Frontend acts as a thin layer over the API, keeping business logic in the backend.
+
+---
+
+```
